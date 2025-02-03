@@ -151,13 +151,16 @@ class Engine:
         period_now = self.time_dic[self.period_now]
 
         dir_list = os.listdir(pic_path)
+        file = None
         for i in dir_list: #寻找所需壁纸文件
             if season in i:
                 if period_now in i:
                     file = i
                     break
+        if file is None:
+            self.__dialog("change_bg", f"找不到符合季节为{season}，天色为{period_now}的壁纸")
+            exit(1)
         file_path = os.path.join(pic_path, file)
-
         self.__dialog("change_bg","修改锁屏壁纸",file_path)
         command = f'gsettings set org.gnome.desktop.background picture-uri "file://{file_path}"'
         res = os.system(command) #调用命令
