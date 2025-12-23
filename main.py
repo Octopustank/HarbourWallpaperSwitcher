@@ -15,6 +15,7 @@ PIC_PATH = os.path.join(PATH, "portview") # 港区图片路径
 LOG_FILE = os.path.join(LOG_PATH, "wallpaper.log") # 日志文件路径
 DATA_FILE = os.path.join(JSON_PATH, "data.json") # 数据文件路径
 TEMP_FILE = os.path.join(JSON_PATH, "temp.json") # 临时文件路径
+CHECK_INTERVAL = 300  # 检查间隔(秒)，每5分钟检查一次
 
 with open(DATA_FILE, "r") as f:
     data = js.load(f)
@@ -207,9 +208,9 @@ class Engine:
 
 
 if __name__ == "__main__":
-    
     log("init", "start up", init=True)
+    
     engine = Engine()
     while True:
-        next_time = engine.run()
-        tm.sleep(next_time)
+        engine.run()
+        tm.sleep(CHECK_INTERVAL)
