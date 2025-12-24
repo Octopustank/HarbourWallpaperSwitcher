@@ -15,7 +15,7 @@ PIC_PATH = os.path.join(PATH, "portview") # 港区图片路径
 LOG_FILE = os.path.join(LOG_PATH, "wallpaper.log") # 日志文件路径
 DATA_FILE = os.path.join(JSON_PATH, "data.json") # 数据文件路径
 TEMP_FILE = os.path.join(JSON_PATH, "temp.json") # 临时文件路径
-CHECK_INTERVAL = 300  # 检查间隔(秒)，每5分钟检查一次
+CHECK_INTERVAL = 60 * 10  # 检查间隔(秒)
 
 with open(DATA_FILE, "r") as f:
     data = js.load(f)
@@ -184,7 +184,6 @@ class Engine:
 
 
     def run(self): #运行时调用(快更新)
-        self.__dialog("main","运行",dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         self.get_time() #刷新程序时间
 
         if self.today_ISO != self.update_time:
@@ -200,17 +199,25 @@ class Engine:
         res = False
         res = self.cal_period()
         if res: #若时间段发生变化
+            self.__dialog("main","运行",dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             self.change_screen() #调用更改壁纸
+            self.__dialog("main","完成壁纸切换\n")
+        else:
+            # 未更新时仅简单记录
+            log("check", f"检查完成，无需更新 - {self.time_dic[self.period_now]}")
 
         next_time = self.cal_delta_time() #获取下一次等待时长
-        self.__dialog("main","完成一次运行",f"更改:{res}\n")
         return next_time + 1
 
 
 if __name__ == "__main__":
     log("init", "start up", init=True)
+    print("Harbour Wallpaper Switcher - 智能定时检查模式")
+    print(f"最长间隔: {CHECK_INTERVAL}秒 ({CHECK_INTERVAL//60}分钟)")
     
     engine = Engine()
     while True:
-        engine.run()
-        tm.sleep(CHECK_INTERVAL)
+        next_time = engine.run()
+        # 取动态计算时间和最大间隔的最小值
+        sleep_time = min(next_time, CHECK_INTERVAL)
+        tm.sleep(sleep_time)
